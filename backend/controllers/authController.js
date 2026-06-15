@@ -1,5 +1,6 @@
 const { User, sequelize } = require('../models');
-const { hashPassword } = require('../utils/passwordUtils');
+const { hashPassword, comparePassword } = require('../utils/passwordUtils');
+const { generateToken } = require('../utils/jwt');
 
 /**
  * POST /api/auth/signup
@@ -8,16 +9,10 @@ const { hashPassword } = require('../utils/passwordUtils');
 const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
 
-  // Use a transaction so that if anything fails mid-way,
-  // no partial user record is left behind.
   const transaction = await sequelize.transaction();
 
   try {
-    // Check for existing user with this email
-    const existingUser = await User.findOne({
-      where: { email },
-      transaction,
-    });
+    const existingUser = await User.findOne({ where: { email }, transaction });
 
     if (existingUser) {
       await transaction.rollback();
@@ -29,11 +24,7 @@ const signup = async (req, res, next) => {
     const hashedPassword = await hashPassword(password);
 
     const newUser = await User.create(
-      {
-        username,
-        email,
-        password: hashedPassword,
-      },
+      { username, email, password: hashedPassword },
       { transaction }
     );
 
@@ -52,8 +43,6 @@ const signup = async (req, res, next) => {
   } catch (error) {
     await transaction.rollback();
 
-    // Handle the DB-level unique constraint as a fallback
-    // (in case of a race condition between the findOne check and create)
     if (error.name === 'SequelizeUniqueConstraintError') {
       return res.status(409).json({
         error: { message: 'User already exists' },
@@ -64,4 +53,55 @@ const signup = async (req, res, next) => {
   }
 };
 
-module.exports = { signup };
+/**
+ * POST /api/auth/login
+ * Authenticates a user and returns a JWT token.
+ */
+const login = async (req, res, next) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ where: { email } });
+
+    // Deliberately the SAME error message and status for both
+    // "no such email" and "wrong password" — never reveal which one it was.
+    if (!user) {
+      return res.status(401).json({
+        error: { message: 'Invalid credentials' },
+      });
+    }
+
+    const isMatch = await comparePassword(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        error: { message: 'Invalid credentials' },
+      });
+    }
+
+    const token = generateToken({ id: user.id, email: user.email });
+
+    return res.status(200).json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        isPremium: user.isPremium,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/auth/me
+ * Returns the currently authenticated user's profile.
+ * Protected by authMiddleware — req.user is already populated.
+ */
+const getMe = async (req, res) => {
+  return res.status(200).json({ user: req.user });
+};
+
+module.exports = { signup, login, getMe };

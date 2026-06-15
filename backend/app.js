@@ -9,6 +9,7 @@ const errorHandler = require('./middleware/errorHandler');
 const healthRoutes = require('./routes/health');
 
 const app = express();
+app.use(express.json());
 
 // Security headers
 app.use(helmet());

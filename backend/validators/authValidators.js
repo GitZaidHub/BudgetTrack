@@ -26,5 +26,16 @@ const signupValidator = [
     .matches(/\d/)
     .withMessage('Password must contain at least one number'),
 ];
+const loginValidator = [
+  body('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Please provide a valid email address')
+    .normalizeEmail(),
 
-module.exports = { signupValidator };
+  body('password').notEmpty().withMessage('Password is required'),
+];
+
+module.exports = { signupValidator, loginValidator };
