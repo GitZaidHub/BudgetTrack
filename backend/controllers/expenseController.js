@@ -30,25 +30,50 @@ const createExpense = async (req, res, next) => {
 };
 
 /**
- * GET /api/expenses
- * Lists all expenses belonging to the authenticated user, newest first.
- * Pagination is added in Milestone 11 — for now, returns the full list.
+ * GET /api/expenses?page=1&limit=10
+ * Lists the authenticated user's expenses, paginated.
+ * Defaults to page=1, limit=10 if not provided.
  */
 const getExpenses = async (req, res, next) => {
   const userId = req.user.id;
 
+  // express-validator's .toInt() already coerced these, but default
+  // here too in case the query params were omitted entirely.
+ const page = Number(req.query.page) || 1;
+const limit = Number(req.query.limit) || 10;
+const offset = (page - 1) * limit;
+
   try {
-    const expenses = await Expense.findAll({
+    // findAndCountAll does both the paginated SELECT and the total
+    // COUNT in a way Sequelize optimizes internally — no need to
+    // run two separate queries by hand.
+    console.log({
+  page,
+  limit,
+  offset,
+  pageType: typeof page,
+  limitType: typeof limit,
+});
+    const { count, rows } = await Expense.findAndCountAll({
       where: { userId },
       order: [['createdAt', 'DESC']],
+      limit,
+      offset,
     });
 
-    return res.status(200).json({ expenses });
+    const totalPages = Math.max(1, Math.ceil(count / limit));
+
+    return res.status(200).json({
+      expenses: rows,
+      totalCount: count,
+      totalPages,
+      currentPage: page,
+      limit,
+    });
   } catch (error) {
     next(error);
   }
 };
-
 /**
  * DELETE /api/expenses/:id
  * Deletes an expense — but only if it belongs to the authenticated user.

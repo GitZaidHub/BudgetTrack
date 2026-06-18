@@ -5,9 +5,10 @@ const { signup, login, getMe } = require('../controllers/authController');
 const { signupValidator, loginValidator } = require('../validators/authValidators');
 const validate = require('../middleware/validate');
 const authMiddleware = require('../middleware/authMiddleware');
+const { authRateLimiter } = require('../middleware/rateLimiter');
 
-router.post('/signup', signupValidator, validate, signup);
-router.post('/login', loginValidator, validate, login);
+router.post('/signup',authRateLimiter, signupValidator, validate, signup);
+router.post('/login', authRateLimiter, loginValidator, validate, login);
 router.get('/me', authMiddleware, getMe);
 
 module.exports = router;

@@ -10,10 +10,16 @@ const errorHandler = require('./middleware/errorHandler');
 const healthRoutes = require('./routes/health');
 const aiRoutes = require('./routes/ai');
 const paymentRoutes = require('./routes/payment');
+const premiumRoutes = require('./routes/premium');
+const passwordRoutes = require('./routes/password');
+const { generalRateLimiter } = require('./middleware/rateLimiter');
 const app = express();
 app.use(express.json());
+app.use(generalRateLimiter);
 
 // Security headers
+// Helmet's defaults are appropriate here since this server only
+// serves JSON, not HTML — no CSP customization needed for an API.
 app.use(helmet());
 
 
@@ -32,6 +38,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/premium', premiumRoutes);
+app.use('/api/password', passwordRoutes);
 app.use('/api/health', healthRoutes);
 
 

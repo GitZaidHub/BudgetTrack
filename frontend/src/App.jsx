@@ -5,6 +5,11 @@ import GuestRoute from './components/GuestRoute';
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import Dashboard from './pages/Dashboard';
+import PremiumGuard from './components/PremiumGuard';
+import Leaderboard from './pages/Leaderboard';
+import ReportPage from './pages/ReportPage';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   return (
@@ -34,6 +39,42 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+  path="/leaderboard"
+  element={
+    <ProtectedRoute>
+      <PremiumGuard>
+        <Leaderboard />
+      </PremiumGuard>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/report"
+  element={
+    <ProtectedRoute>
+      <PremiumGuard>
+        <ReportPage />
+      </PremiumGuard>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/forgot-password"
+  element={
+    <GuestRoute>
+      <ForgotPassword />
+    </GuestRoute>
+  }
+/>
+<Route
+  path="/password/resetpassword/:id"
+  element={
+    <GuestRoute>
+      <ResetPassword />
+    </GuestRoute>
+  }
+/>
 
         {/* Default redirects */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

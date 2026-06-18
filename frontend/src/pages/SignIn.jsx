@@ -107,15 +107,9 @@ const SignIn = () => {
         </Button>
       </form>
 
-      {/* Forgot password flow arrives in Milestone 10 */}
-      <p className="mt-3 text-center text-xs text-gray-400">
-        Forgot password support is coming soon.
-      </p>
-
-      <p className="mt-6 text-center text-sm text-gray-500">
-        Don't have an account?{' '}
-        <Link to="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
-          Sign up
+      <p className="mt-3 text-center text-sm">
+        <Link to="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
+          Forgot password?
         </Link>
       </p>
     </AuthLayout>
