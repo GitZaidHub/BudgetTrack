@@ -1,9 +1,10 @@
 import { RANGE_OPTIONS } from '../utils/dateRanges';
+import DownloadMenu from './DownloadMenu';
 
-const ReportFilters = ({ activeRange, onRangeChange, onDownload, downloadDisabled }) => {
+const ReportFilters = ({ activeRange, onRangeChange, onDownloadCsv, onDownloadPdf, downloadDisabled }) => {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {RANGE_OPTIONS.map((opt) => (
           <button
             key={opt.value}
@@ -19,15 +20,11 @@ const ReportFilters = ({ activeRange, onRangeChange, onDownload, downloadDisable
         ))}
       </div>
 
-      <button
-        onClick={onDownload}
+      <DownloadMenu
+        onDownloadCsv={onDownloadCsv}
+        onDownloadPdf={onDownloadPdf}
         disabled={downloadDisabled}
-        title={downloadDisabled ? 'No expenses to download for this range' : 'Download as CSV'}
-        className="text-sm px-3 py-1.5 rounded-md font-medium bg-gray-900 text-white
-          hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        ⬇ Download CSV
-      </button>
+      />
     </div>
   );
 };

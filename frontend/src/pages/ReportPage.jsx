@@ -6,6 +6,10 @@ import { exportExpensesToCsv } from '../utils/exportCsv';
 import ReportFilters from '../components/ReportFilters';
 import ExpenseList from '../components/ExpenseList';
 import EmptyState from '../components/EmptyState';
+import { exportExpensesToPdf } from '../utils/exportPdf';
+import { useAuth } from '../context/AuthContext';
+
+
 
 const formatAmount = (amount) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
@@ -15,6 +19,11 @@ const ReportPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeRange, setActiveRange] = useState('all');
+  const { user } = useAuth();
+
+const handleDownloadPdf = () => {
+  exportExpensesToPdf(filteredExpenses, activeRange, user?.username);
+};
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -60,11 +69,12 @@ const ReportPage = () => {
         {!loading && !error && (
           <>
             <ReportFilters
-              activeRange={activeRange}
-              onRangeChange={setActiveRange}
-              onDownload={handleDownload}
-              downloadDisabled={filteredExpenses.length === 0}
-            />
+  activeRange={activeRange}
+  onRangeChange={setActiveRange}
+  onDownloadCsv={handleDownload}
+  onDownloadPdf={handleDownloadPdf}
+  downloadDisabled={filteredExpenses.length === 0}
+/>
 
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">

@@ -20,28 +20,33 @@ const forgotPassword = async (req, res, next) => {
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      // Deliberately respond identically to the success case.
       return res.status(200).json(genericResponse);
     }
 
-    // Invalidate any previous outstanding requests for this user —
-    // only the newest link should ever be usable, preventing a
-    // scenario where an old, forgotten link is still active.
-    await ForgotPasswordRequest.update(
-      { isActive: false },
-      { where: { userId: user.id, isActive: true } }
-    );
+    // Both writes now share one transaction — deactivating old requests
+    // and creating the new one succeed or fail together.
+    const transaction = await sequelize.transaction();
+    let request;
 
-    const request = await ForgotPasswordRequest.create({ userId: user.id });
+    try {
+      await ForgotPasswordRequest.update(
+        { isActive: false },
+        { where: { userId: user.id, isActive: true }, transaction }
+      );
+
+      request = await ForgotPasswordRequest.create({ userId: user.id }, { transaction });
+
+      await transaction.commit();
+    } catch (txError) {
+      await transaction.rollback();
+      throw txError;
+    }
 
     const resetUrl = `${process.env.FRONTEND_URL}/password/resetpassword/${request.id}`;
 
     try {
       await sendPasswordResetEmail(user.email, resetUrl);
     } catch (mailError) {
-      // Log it, but still return the generic success response —
-      // we don't want to reveal email delivery failures to the client,
-      // and a transient SMTP issue shouldn't expose internal state.
       console.error('[mailService] Failed to send reset email:', mailError.message);
     }
 
@@ -50,7 +55,6 @@ const forgotPassword = async (req, res, next) => {
     next(error);
   }
 };
-
 /**
  * GET /api/password/resetpassword/:id
  * Validates a reset link before showing the "set new password" form.
