@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { load } from '@cashfreepayments/cashfree-js';
 import { createPaymentOrder, verifyPayment } from '../api/paymentApi';
+import { useToast } from '../context/ToastContext';
+import { Sparkles, Loader2 } from 'lucide-react';
 
 const PremiumButton = ({ onUpgradeSuccess }) => {
   const [processing, setProcessing] = useState(false);
-  const [alert, setAlert] = useState(null); // { type: 'success' | 'error', message }
+  const { showToast } = useToast();
 
   const handleBuyPremium = async () => {
     setProcessing(true);
-    setAlert(null);
 
     try {
       const { data: orderData } = await createPaymentOrder();
@@ -18,10 +19,6 @@ const PremiumButton = ({ onUpgradeSuccess }) => {
         mode: import.meta.env.VITE_CASHFREE_ENV || 'sandbox',
       });
 
-      // Opens the Cashfree checkout as a modal. The promise resolves
-      // when the checkout flow closes — by success, failure, OR the
-      // user dismissing it. We must NOT treat resolution as success;
-      // we always re-verify with our backend next.
       await cashfree.checkout({
         paymentSessionId,
         redirectTarget: '_modal',
@@ -30,43 +27,33 @@ const PremiumButton = ({ onUpgradeSuccess }) => {
       const { data: verifyData } = await verifyPayment(orderId);
 
       if (verifyData.success) {
-        setAlert({ type: 'success', message: 'Transaction successful!' });
+        showToast('Membership upgraded successfully!', 'success');
         onUpgradeSuccess();
       } else {
-        setAlert({ type: 'error', message: 'TRANSACTION FAILED' });
+        showToast('Verification failed. Payment not confirmed.', 'error');
       }
     } catch (err) {
-      setAlert({ type: 'error', message: 'TRANSACTION FAILED' });
+      showToast('Transaction was cancelled or failed.', 'error');
     } finally {
       setProcessing(false);
     }
   };
 
   return (
-    <div>
-      <button
-        onClick={handleBuyPremium}
-        disabled={processing}
-        className="inline-flex items-center gap-2 rounded-md bg-amber-500 px-4 py-2 text-sm
-          font-semibold text-white shadow-sm hover:bg-amber-400 transition-colors
-          disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {processing ? 'Processing…' : '✨ Buy premium membership'}
-      </button>
-
-      {alert && (
-        <p
-          role="alert"
-          className={`mt-2 text-sm px-3 py-2 rounded-md border ${
-            alert.type === 'success'
-              ? 'text-green-700 bg-green-50 border-green-200'
-              : 'text-red-700 bg-red-50 border-red-200'
-          }`}
-        >
-          {alert.message}
-        </p>
+    <button
+      onClick={handleBuyPremium}
+      disabled={processing}
+      className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-2.5 text-xs
+        font-bold text-white shadow-lg shadow-amber-500/10 hover:from-amber-400 hover:to-amber-550 transition-all
+        disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer active:scale-[0.97] select-none"
+    >
+      {processing ? (
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+      ) : (
+        <Sparkles className="w-3.5 h-3.5 fill-white" />
       )}
-    </div>
+      <span>{processing ? 'Processing...' : 'Upgrade to Premium'}</span>
+    </button>
   );
 };
 

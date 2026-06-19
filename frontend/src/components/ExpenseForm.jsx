@@ -4,6 +4,7 @@ import { suggestCategory } from '../api/aiApi';
 import useDebouncedValue from '../hooks/useDebouncedValue';
 import FormInput from './FormInput';
 import Button from './Button';
+import { Sparkles, Brain, Loader2 } from 'lucide-react';
 
 const initialForm = { amount: '', description: '', category: '' };
 
@@ -39,8 +40,7 @@ const ExpenseForm = ({ onAdd }) => {
   const [suggesting, setSuggesting] = useState(false);
   const [wasAiSuggested, setWasAiSuggested] = useState(false);
 
-  // Tracks whether the user has manually picked a category themselves —
-  // once they have, we stop overwriting their choice with new AI suggestions.
+  // Tracks whether the user has manually picked a category themselves
   const userOverrodeCategory = useRef(false);
 
   const debouncedDescription = useDebouncedValue(form.description, 600);
@@ -48,8 +48,6 @@ const ExpenseForm = ({ onAdd }) => {
   useEffect(() => {
     const description = debouncedDescription.trim();
 
-    // Don't call the AI for trivially short input, and don't overwrite
-    // a category the user has deliberately chosen themselves.
     if (description.length < 3 || userOverrodeCategory.current) {
       return;
     }
@@ -65,8 +63,7 @@ const ExpenseForm = ({ onAdd }) => {
           setWasAiSuggested(true);
         }
       } catch {
-        // Silently ignore — AI suggestion is non-critical.
-        // The form remains fully usable via manual category selection.
+        // Silently ignore AI suggestions errors
       } finally {
         if (!cancelled) setSuggesting(false);
       }
@@ -75,7 +72,7 @@ const ExpenseForm = ({ onAdd }) => {
     fetchSuggestion();
 
     return () => {
-      cancelled = true; // avoids a stale response overwriting a newer one
+      cancelled = true;
     };
   }, [debouncedDescription]);
 
@@ -136,9 +133,10 @@ const ExpenseForm = ({ onAdd }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="space-y-4">
+        {/* Amount Input */}
         <FormInput
-          label="Amount"
+          label="Amount (INR)"
           name="amount"
           type="number"
           step="0.01"
@@ -149,62 +147,76 @@ const ExpenseForm = ({ onAdd }) => {
           placeholder="0.00"
         />
 
-        <div className="sm:col-span-2">
-          <FormInput
-            label="Description"
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            error={errors.description}
-            placeholder="e.g. Lunch at Dominos"
-          />
-        </div>
-      </div>
-
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-            Category
-          </label>
-          {suggesting && (
-            <span className="text-xs text-indigo-500 animate-pulse">AI thinking…</span>
-          )}
-          {!suggesting && wasAiSuggested && (
-            <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-              ✨ AI suggested
-            </span>
-          )}
-        </div>
-        <select
-          id="category"
-          name="category"
-          value={form.category}
+        {/* Description Input */}
+        <FormInput
+          label="Description"
+          name="description"
+          value={form.description}
           onChange={handleChange}
-          aria-invalid={!!errors.category}
-          className={`block w-full rounded-md border px-3 py-2 text-sm shadow-sm bg-white
-            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-            ${errors.category ? 'border-red-400' : 'border-gray-300'}`}
-        >
-          <option value="" disabled>
-            Select a category
-          </option>
-          {EXPENSE_CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-        {errors.category && <p className="mt-1 text-xs text-red-600">{errors.category}</p>}
+          error={errors.description}
+          placeholder="e.g. Server hosting renewal"
+        />
+
+        {/* Category Selector with AI suggestion highlights */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label htmlFor="category" className="block text-xs font-semibold tracking-wider text-slate-300 uppercase">
+              Category
+            </label>
+            
+            {/* AI suggestion indicator animations */}
+            {suggesting && (
+              <span className="flex items-center gap-1.5 text-xs text-purple-400 font-medium animate-pulse">
+                <Brain className="w-3.5 h-3.5 animate-spin" />
+                Thinking...
+              </span>
+            )}
+            
+            {!suggesting && wasAiSuggested && (
+              <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-purple-900/30 border border-purple-800/40 text-purple-300 font-bold font-sans">
+                <Sparkles className="w-3 h-3 fill-purple-300" />
+                Suggested by Gemini AI
+              </span>
+            )}
+          </div>
+
+          <div className="relative">
+            <select
+              id="category"
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              aria-invalid={!!errors.category}
+              className={`block w-full rounded-xl px-4 py-3 text-sm transition-all duration-300 bg-slate-900/60 text-slate-200 border cursor-pointer focus:outline-none ${
+                errors.category
+                  ? 'border-red-600/40 focus:border-red-600 focus:ring-2 focus:ring-red-600/25'
+                  : wasAiSuggested
+                  ? 'border-purple-700/40 shadow-[0_0_12px_rgba(109,40,217,0.12)] focus:border-purple-700'
+                  : 'border-white/8 focus:border-blue-600/50'
+              }`}
+            >
+              <option value="" disabled className="bg-bg-deep text-slate-400">
+                Select a category
+              </option>
+              {EXPENSE_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat} className="bg-bg-deep text-slate-200">
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+          {errors.category && <p className="mt-1 text-[11px] font-medium text-red-400">{errors.category}</p>}
+        </div>
       </div>
 
       {serverError && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+        <p className="text-xs text-red-400 bg-red-900/20 border border-red-800/40 rounded-xl px-4 py-3 animate-fade-in font-medium">
           {serverError}
         </p>
       )}
 
-      <Button type="submit" loading={submitting}>
-        Add expense
+      <Button type="submit" loading={submitting} fullWidth>
+        Add transaction
       </Button>
     </form>
   );

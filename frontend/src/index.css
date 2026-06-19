@@ -1,1 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Outfit', sans-serif;
+
+  /* Professional Corporate Dark Palette */
+  --color-bg-deep: #0F1419;
+  --color-bg-card: #111827;
+  --color-bg-navy: #131D2A;
+
+  --color-indigo-500: #2563EB;
+  --color-purple-500: #6D28D9;
+  --color-cyan-500: #0891B2;
+  --color-emerald-500: #16A34A;
+  --color-amber-500: #D97706;
+  --color-rose-500: #DC2626;
+
+  --color-text-flat: #F5F7FA;
+  --color-text-slate: #CBD5E1;
+  --color-text-dim: #9CA3AF;
+
+  --color-glass-border: rgba(255, 255, 255, 0.06);
+  --color-glass-border-glow: rgba(37, 99, 235, 0.15);
+  
+  --animate-float: float 8s ease-in-out infinite;
+  --animate-float-delayed: float-delayed 10s ease-in-out infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-20px) scale(1.05); }
+  }
+  @keyframes float-delayed {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(20px) scale(0.95); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 12px rgba(37, 99, 235, 0.08); border-color: rgba(255, 255, 255, 0.06); }
+    50% { box-shadow: 0 0 24px rgba(37, 99, 235, 0.2); border-color: rgba(37, 99, 235, 0.25); }
+  }
+}
+
+/* Custom Base Styles */
+body {
+  background-color: #0F1419;
+  color: #F5F7FA;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel-hover:hover {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 15px rgba(99, 102, 241, 0.1);
+  transform: translateY(-2px);
+}
+
+.glass-input {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #F8FAFC;
+  transition: all 0.2s ease;
+}
+
+.glass-input:focus {
+  outline: none;
+  background: rgba(15, 23, 42, 0.85);
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* Modern Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B1020;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Gradient Text */
+.gradient-text-indigo-cyan {
+  background: linear-gradient(135deg, #2563EB 0%, #0891B2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-purple-pink {
+  background: linear-gradient(135deg, #6D28D9 0%, #BE185D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-gold {
+  background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Floating BG Orbs */
+.glow-orb-indigo {
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0) 70%);
+  filter: blur(40px);
+}
+
+.glow-orb-purple {
+  background: radial-gradient(circle, rgba(109, 40, 217, 0.08) 0%, rgba(109, 40, 217, 0) 70%);
+  filter: blur(40px);
+}
+
+/* Shimmer Skeletal Loading */
+.shimmer-state {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Tailwind Utility Classes for Custom Colors and Borders */
+@layer utilities {
+  .text-dim {
+    @apply text-slate-400;
+  }
+
+  .border-glass {
+    @apply border-white/[0.08];
+  }
+
+  .text-slate-350 {
+    @apply text-slate-300;
+  }
+}
