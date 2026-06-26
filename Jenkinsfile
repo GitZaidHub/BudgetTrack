@@ -5,7 +5,6 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo 'Checking out source code...'
                 checkout scm
             }
         }
@@ -33,15 +32,22 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy Frontend') {
+            steps {
+                sh 'rm -rf /var/www/html/*'
+                sh 'cp -r frontend/dist/* /var/www/html/'
+            }
+        }
     }
 
     post {
         success {
-            echo '🎉 Expense Tracker Build Successful!'
+            echo '🎉 Build and Deployment Successful!'
         }
 
         failure {
-            echo '❌ Build Failed!'
+            echo '❌ Pipeline Failed!'
         }
     }
 }
