@@ -39,6 +39,11 @@ const createExpenseValidator = [
     .withMessage('Category is required')
     .isIn(EXPENSE_CATEGORIES)
     .withMessage(`Category must be one of: ${EXPENSE_CATEGORIES.join(', ')}`),
+    body('note')
+  .optional()
+  .trim()
+  .isLength({ max: 500 })
+  .withMessage('Note must be 500 characters or fewer'),
 ];
 
 const expenseIdValidator = [

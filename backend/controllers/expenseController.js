@@ -6,14 +6,14 @@ const { Expense, sequelize } = require('../models');
  * userId is taken from req.user (set by authMiddleware) — NEVER from req.body.
  */
 const createExpense = async (req, res, next) => {
-  const { amount, description, category } = req.body;
+  const { amount, description, category,note } = req.body;
   const userId = req.user.id;
 
   const transaction = await sequelize.transaction();
 
   try {
     const expense = await Expense.create(
-      { amount, description, category, userId },
+      { amount, description, category,note: note || null, userId  },
       { transaction }
     );
 

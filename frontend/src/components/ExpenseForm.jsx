@@ -6,7 +6,7 @@ import FormInput from './FormInput';
 import Button from './Button';
 import { Sparkles, Brain, Loader2 } from 'lucide-react';
 
-const initialForm = { amount: '', description: '', category: '' };
+const initialForm = { amount: '', description: '', category: '',note:'' };
 
 const validate = (form) => {
   const errors = {};
@@ -27,6 +27,9 @@ const validate = (form) => {
   if (!form.category) {
     errors.category = 'Please select a category';
   }
+  if (form.note && form.note.length > 500) {
+  errors.note = 'Note must be 500 characters or fewer';
+}
 
   return errors;
 };
@@ -205,6 +208,29 @@ const ExpenseForm = ({ onAdd }) => {
               ))}
             </select>
           </div>
+          <div>
+  <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-1">
+    Note <span className="text-gray-400 font-normal">(optional)</span>
+  </label>
+  <textarea
+    id="note"
+    name="note"
+    value={form.note}
+    onChange={handleChange}
+    rows={2}
+    maxLength={500}
+    placeholder="Any extra detail about this expense…"
+    className={`block w-full rounded-md border px-3 py-2 text-sm shadow-sm resize-none
+      focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+      ${errors.note ? 'border-red-400' : 'border-gray-300'}`}
+  />
+  <div className="flex justify-between mt-1">
+    {errors.note
+      ? <p className="text-xs text-red-600">{errors.note}</p>
+      : <span />}
+    <p className="text-xs text-gray-400">{form.note.length}/500</p>
+  </div>
+</div>
           {errors.category && <p className="mt-1 text-[11px] font-medium text-red-400">{errors.category}</p>}
         </div>
       </div>

@@ -28,6 +28,11 @@ const Expense = sequelize.define(
       type: DataTypes.ENUM(...EXPENSE_CATEGORIES),
       allowNull: false,
     },
+    note: {
+  type: DataTypes.STRING(500),
+  allowNull: true,
+  defaultValue: null,
+},
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -43,6 +48,7 @@ const Expense = sequelize.define(
       },
     ],
   }
+  
 );
 
 module.exports = Expense;

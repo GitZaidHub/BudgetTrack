@@ -1,25 +1,56 @@
-const { suggestCategory } = require('../services/geminiService');
+const { suggestCategory, summarizeExpenses, suggestBudget } = require('../services/geminiService');
+const { Expense } = require('../models');
 
-/**
- * POST /api/ai/suggest-category
- * Returns an AI-suggested category for a given expense description.
- * Protected route — requires authentication, but doesn't touch the DB,
- * so no transaction is needed here.
- */
 const suggestCategoryHandler = async (req, res, next) => {
   const { description } = req.body;
-
   try {
     const category = await suggestCategory(description);
-
-    // category will be null if Gemini failed or returned something
-    // unusable — this is a normal, expected outcome, not an error.
     return res.status(200).json({ category });
   } catch (error) {
-    // suggestCategory is designed to never throw, but guard anyway —
-    // a 500 here should be genuinely exceptional.
     next(error);
   }
 };
 
-module.exports = { suggestCategoryHandler };
+/**
+ * POST /api/ai/summarize
+ * Premium only — returns an AI-generated summary of the user's expenses.
+ */
+const summarizeHandler = async (req, res, next) => {
+  const userId = req.user.id;
+  try {
+    const expenses = await Expense.findAll({
+      where: { userId },
+      order: [['createdAt', 'DESC']],
+      limit: 100, // cap to last 100 expenses to keep token count manageable
+      attributes: ['amount', 'description', 'category', 'createdAt'],
+    });
+
+    const summary = await summarizeExpenses(expenses);
+
+    return res.status(200).json({ summary });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/ai/budget-suggestion
+ * Premium only — returns per-category budget recommendations.
+ */
+const budgetSuggestionHandler = async (req, res, next) => {
+  const userId = req.user.id;
+  try {
+    const expenses = await Expense.findAll({
+      where: { userId },
+      attributes: ['amount', 'category'],
+    });
+
+    const suggestions = await suggestBudget(expenses);
+
+    return res.status(200).json({ suggestions });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { suggestCategoryHandler, summarizeHandler, budgetSuggestionHandler };

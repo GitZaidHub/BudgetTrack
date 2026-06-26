@@ -9,6 +9,7 @@ import ExpenseList from '../components/ExpenseList';
 import PaginationControls from '../components/PaginationControls';
 import PerPageSelector from '../components/PerPageSelector';
 import PremiumButton from '../components/PremiumButton';
+import AiInsightsPanel from '../components/AiInsightsPanel';
 import PremiumBanner from '../components/PremiumBanner';
 import {
   IndianRupee,
@@ -287,6 +288,8 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+            {user?.isPremium && <AiInsightsPanel />}
+
       </div>
 
       {/* Main Form and Expense List Columns */}

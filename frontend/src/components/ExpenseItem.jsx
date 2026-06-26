@@ -63,6 +63,11 @@ const ExpenseItem = ({ expense, onDelete }) => {
             <p className="text-sm font-semibold text-slate-100 truncate group-hover:text-white transition-colors">
               {expense.description}
             </p>
+            <p>
+              {expense.note && (
+  <p className="text-xs text-gray-400 mt-0.5 italic">"{expense.note}"</p>
+)}
+            </p>
             <p className="text-xs text-slate-400 flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5 shrink-0" />
               <span>{formatDate(expense.createdAt)}</span>
